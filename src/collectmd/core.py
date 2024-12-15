@@ -48,64 +48,77 @@ def _process_csv_file(file_path, target_dir, encoding):
                 print(f"不是文件夹，跳过: {source_dir}")
                 continue
 
+            # 用于标记是否有md文件因重名而未移动
+            has_unmoved_md = False
+
             # 处理源文件夹下的所有文件
             for root, dirs, files in os.walk(source_dir):
-                # 处理 images 文件夹
-                if 'images' in dirs:
-                    _process_images_folder(root, target_dir)
+                # 移动所有非md文件和文件夹
+                for dir_name in dirs:
+                    source_path = os.path.join(root, dir_name)
+                    target_path = os.path.join(target_dir, dir_name)
+                    try:
+                        if os.path.exists(target_path):
+                            shutil.rmtree(target_path)
+                        shutil.copytree(source_path, target_path)
+                        shutil.rmtree(source_path)
+                        print(f"已成功移动文件夹: {source_path} -> {target_path}")
+                    except Exception as e:
+                        print(f"移动文件夹失败: {source_path}")
+                        error_log_path = os.path.join(target_dir, 'error.log')
+                        current_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+                        with open(error_log_path, 'a', encoding='utf-8') as log:
+                            log.write(f"{current_time} - {source_path}: {str(e)}\n")
 
                 # 处理所有文件
-                for file in files:
-                    _process_single_file(root, file, target_dir)
+                for file_name in files:
+                    source_path = os.path.join(root, file_name)
+                    target_path = os.path.join(target_dir, file_name)
+                    
+                    try:
+                        if file_name.lower().endswith('.md'):
+                            # 检查目标目录中是否存在同名md文件
+                            target_md_files = [f for f in os.listdir(target_dir) if f.lower().endswith('.md')]
+                            if file_name in target_md_files:
+                                # 记录到same.log
+                                same_log_path = os.path.join(target_dir, 'same.log')
+                                current_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+                                with open(same_log_path, 'a', encoding='utf-8') as log:
+                                    log.write(f"{current_time} - {source_path}\n")
+                                print(f"MD文件已存在，已记录到日志sdadasd: {source_path}")
+                                has_unmoved_md = True
+                                continue
+                            else:
+                                # 移动md文件
+                                shutil.copy2(source_path, target_path)
+                                os.remove(source_path)
+                                print(f"已成功移动文件: {source_path} -> {target_path}")
+                        else:
+                            # 移动非md文件
+                            shutil.copy2(source_path, target_path)
+                            os.remove(source_path)
+                            print(f"已成功移动文件: {source_path} -> {target_path}")
+                    except Exception as e:
+                        print(f"移动文件失败: {source_path}")
+                        error_log_path = os.path.join(target_dir, 'error.log')
+                        current_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+                        with open(error_log_path, 'a', encoding='utf-8') as log:
+                            log.write(f"{current_time} - {source_path}: {str(e)}\n")
             
-            # 清理空文件夹
-            try:
-                shutil.rmtree(source_dir)
-                print(f"已清理源文件夹: {source_dir}")
-            except Exception as e:
-                print(f"清理源文件夹失败: {str(e)}")
+            print(f"has_unmoved_md: {has_unmoved_md}")
+            # 只有在没有未移动的md文件时才清理源文件夹
+            if not has_unmoved_md:
+                print("清理源文件夹")
+                # try:
+                #     shutil.rmtree(source_dir)
+                #     print(f"已清理源文件夹: {source_dir}")
+                # except Exception as e:
+                #     print(f"清理源文件夹失败: {str(e)}")
+                #     error_log_path = os.path.join(target_dir, 'error.log')
+                #     current_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+                #     with open(error_log_path, 'a', encoding='utf-8') as log:
+                #         log.write(f"{current_time} - Failed to remove {source_dir}: {str(e)}\n")
+            else:
+                print(f"源文件夹中存在未移动的MD文件，保留源文件夹: {source_dir}")
         
         print(f"\n总共处理了 {row_count} 行数据")
-
-def _process_images_folder(root, target_dir):
-    """处理 images 文件夹"""
-    images_dir = os.path.join(root, 'images')
-    target_images = os.path.join(target_dir, 'images')
-    try:
-        print(f"正在移动 images 文件夹: {images_dir} -> {target_images}")
-        if not os.path.exists(target_images):
-            os.makedirs(target_images)
-        for img in os.listdir(images_dir):
-            src_img = os.path.join(images_dir, img)
-            dst_img = os.path.join(target_images, img)
-            shutil.copy2(src_img, dst_img)
-            os.remove(src_img)
-        os.rmdir(images_dir)
-        print(f"已成功移动 images 文件夹")
-    except Exception as e:
-        print(f"移动 images 文件夹失败: {str(e)}")
-
-def _process_single_file(root, file, target_dir):
-    """处理单个文件"""
-    source_path = os.path.join(root, file)
-    target_path = os.path.join(target_dir, file)
-    
-    # 处理 md 文件
-    if file.lower().endswith('.md'):
-        if os.path.exists(target_path):
-            # 如果 md 文件已存在，记录到 same.log
-            log_path = os.path.join(target_dir, 'same.log')
-            current_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-            with open(log_path, 'a', encoding='utf-8') as log:
-                log.write(f"{current_time} - {source_path}\n")
-            print(f"MD文件已存在，已记录到日志: {source_path}")
-            return
-    
-    # 移动所有非 md 文件或不存在于目标目录的 md 文件
-    try:
-        print(f"正在移动文件: {source_path} -> {target_path}")
-        shutil.copy2(source_path, target_path)
-        os.remove(source_path)
-        print(f"已成功移动: {source_path} -> {target_path}")
-    except Exception as e:
-        print(f"移动失败 {source_path}: {str(e)}")
