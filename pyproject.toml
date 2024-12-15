@@ -1,0 +1,34 @@
+[build-system]
+requires = ["pdm-backend"]
+build-backend = "pdm.backend"
+
+[project]
+name = "mymarkdown"
+version = "0.1.0"
+description = "Default template for PDM package"
+readme = "README.md"
+authors = [
+    {name = "桂圆", email = "your.email@example.com"},
+    {name = "桂圆", email = "1176916155@qq.com"},
+]
+license = {file = "LICENSE",text = "MIT"}
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+]
+keywords = ["markdown", "collector", "file management"]
+dependencies = [
+    "click>=8.0.0",
+    "twine>=6.0.1",
+]
+requires-python = ">=3.10"
+
+[project.urls]
+Homepage = "https://github.com/yourusername/collectmd"
+Repository = "https://github.com/yourusername/collectmd.git"
+
+[project.scripts]
+collectmd = "collectmd.cli:main" 
+[tool.pdm]
+distribution = true
