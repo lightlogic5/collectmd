@@ -6,10 +6,11 @@ from datetime import datetime
 def read_efu_file():
     # 获取桌面路径
     desktop = os.path.join(os.path.expanduser('~'), 'Desktop')
-    file_path = os.path.join(desktop, 'aaaa.efu')
+    file_path = os.path.join(desktop, os.getenv('COLLECT_FILE', 'aa.efu'))
     
     # 获取目标路径
     target_dir = os.getenv('ALL_MD_PATH')
+    print("============",target_dir)
     if not target_dir:
         print("错误: 未设置 ALL_MD_PATH 环境变量")
         return

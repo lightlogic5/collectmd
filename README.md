@@ -9,24 +9,39 @@
 - 处理文件冲突并生成日志
 - 支持批量文件处理
 
-## 安装 
+## 安装
 ```bash
 pip install collectmd
 ```
 
+## 环境变量设置
+
 ```bash
 # Windows
-set ALL_MD_PATH=你的目标文件夹路径
-# Linux/Mac
-export ALL_MD_PATH=你的目标文件夹路径
-``` 
+set EFU_PATH=aa.efu
+set ALL_MD_PATH=path/to/target/directory
 
-```bash
-collectmd process path/to/your/efu/file
+# Linux/Mac
+export EFU_PATH=aa.efu
+export ALL_MD_PATH=path/to/target/directory
 ```
 
+## 使用方法
+
+设置环境变量后，直接运行：
 ```bash
-git clone https://github.com/yourusername/collectmd.git
+collectmd process
+```
+
+或者通过命令行参数指定路径：
+```bash
+collectmd process --efu-path aa.efu --target-dir path/to/target/directory
+```
+
+## 开发
+
+```bash
+git clone https://github.com/lightlogic5/collectmd.git
 cd collectmd
 pip install -e .
 ```
